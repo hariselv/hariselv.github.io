@@ -1,0 +1,68 @@
+clc;
+clear all;
+
+fs = 100000;
+t = 0 : 1/fs : 0.005;
+
+Am = 2;
+fm = 2;
+fc = 20000;
+Ac = 1;
+
+b = input('Enter index value: ');
+
+kf = (b * fm) / Am;
+
+% Message signal
+m_t = Am * sin(2 * pi * fm * t);
+
+% Integral of message signal
+int_m_t = cumsum(m_t) / fs;
+
+% FM signal
+s_t = Ac * cos(2 * pi * fc * t + 2 * pi * kf * int_m_t);
+
+figure(1);
+
+subplot(4,1,1);
+plot(t, m_t);
+title('Message Signal m(t)');
+xlabel('Time');
+ylabel('Amplitude');
+grid on;
+
+subplot(4,1,2);
+plot(t, Ac * cos(2 * pi * fc * t));
+title('Carrier Signal c(t)');
+xlabel('Time');
+ylabel('Amplitude');
+grid on;
+
+% FM demodulation using Hilbert transform
+analytic_signal = hilbert(s_t);
+
+inst_phase = unwrap(angle(analytic_signal));
+inst_freq = diff(inst_phase) * fs / (2 * pi);
+
+m_sec = (inst_freq - fc) / kf;
+t_sec = t(1:end-1);
+
+subplot(4,1,4);
+plot(t_sec, m_sec);
+title('FM Demodulated Signal');
+xlabel('Time');
+ylabel('Amplitude');
+grid on;
+
+% Bandwidth calculation
+del_f = b * fm;
+bw = 2 * (del_f + fm);
+
+disp('Bandwidth of signal is:');
+disp(bw);
+
+% Power calculation
+power = (Ac^2) / 2;
+
+disp('Power of signal is:');
+disp(power);
