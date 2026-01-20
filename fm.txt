@@ -1,61 +1,44 @@
 clc;
 clear all;
-
 fs = 100000;
-t = 0:1/fs:0.005;
-
+t=0:1/fs : 0.005;
 Am = 2;
 fm = 2;
 fc = 20000;
 Ac = 1;
-
 b = input('enter index value');
-
-kf = (b * fm) / Am;
-
-m_t = Am * sin(2 * pi * fm * t);
-int_m_t = cumsum(m_t) / fs;
-
-s_t = Ac * cos(2 * pi * fc * t + 2 * pi * kf * int_m_t);
-
-figure(1);
-
+kf = (b*fm)/Am;
+m_t = Am * sin(2*pi*fm*t);
+int_m_t = cumsum (m_t) /fs;
+s_t = Ac*cos(2*pi*fc*t+2*pi*kf*int_m_t);
+figure (1);
 subplot(4,1,1);
-plot(t, m_t);
-title('Message signal m(t)');
-xlabel('time');
-ylabel('Amplitude');
+plot(t,m_t);
+title ('message signal m(t)');
+xlabel ('time');
+ylabel('Amplitute');
 grid on;
-
-subplot(4,1,2);
-plot(t, Ac * cos(2 * pi * fc * t));
+subplot (4,1,2);
+plot(t,Ac*cos(2*pi*fc*t));
 title('carrier signal c(t)');
 xlabel('time');
-ylabel('Amplitude');
+ylabel('Amplitue');
 grid on;
-
 analytic_signal = hilbert(s_t);
-
-inst_phase = unwrap(angle(analytic_signal));
-inst_freq = diff(inst_phase) * fs / (2 * pi);
-
-m_sec = (inst_freq - fc) / kf;
+inst_phase = unwrap (angle/analytic_signal);
+inst_freq = diff(inst_phase)*fs/(2*pi);
+m_sec = (inst_freq-fc)/kf;
 t_sec = t(1:end-1);
-
 subplot(4,1,4);
-plot(t_sec, m_sec);
-title('FM demodulated signal');
+plot (t_sec , m_sec);
+title ('fm demodulated signal');
 xlabel('time');
-ylabel('Amplitude');
+ylabel('Amplitute');
 grid on;
-
-del_f = b * fm;
-bw = 2 * (del_f + fm);
-
+del_f=b*fm;
+bw=2*(del_f+fm);
 disp('bandwidth of signal is');
 disp(bw);
-
-power = (Ac^2) / 2;
-
+power = (Ac^2)/(2);
 disp('power of signal is');
-disp(power);
+disp(Power);
