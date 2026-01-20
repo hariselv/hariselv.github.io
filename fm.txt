@@ -1,44 +1,80 @@
-clc;
-clear all;
-fs = 100000;
-t=0:1/fs : 0.005;
-Am = 2;
-fm = 2;
-fc = 20000;
-Ac = 1;
-b = input('enter index value');
-kf = (b*fm)/Am;
-m_t = Am * sin(2*pi*fm*t);
-int_m_t = cumsum (m_t) /fs;
-s_t = Ac*cos(2*pi*fc*t+2*pi*kf*int_m_t);
-figure (1);
-subplot(4,1,1);
-plot(t,m_t);
-title ('message signal m(t)');
-xlabel ('time');
-ylabel('Amplitute');
-grid on;
-subplot (4,1,2);
-plot(t,Ac*cos(2*pi*fc*t));
-title('carrier signal c(t)');
-xlabel('time');
-ylabel('Amplitue');
-grid on;
-analytic_signal = hilbert(s_t);
-inst_phase = unwrap (angle/analytic_signal);
-inst_freq = diff(inst_phase)*fs/(2*pi);
-m_sec = (inst_freq-fc)/kf;
-t_sec = t(1:end-1);
-subplot(4,1,4);
-plot (t_sec , m_sec);
-title ('fm demodulated signal');
-xlabel('time');
-ylabel('Amplitute');
-grid on;
-del_f=b*fm;
-bw=2*(del_f+fm);
-disp('bandwidth of signal is');
-disp(bw);
-power = (Ac^2)/(2);
-disp('power of signal is');
-disp(Power);
+clc; close all; clear all;
+
+% === Parameters ===
+Am = 2; Ac = 2;
+fm = 2000; fc = 20000;
+tm = 1/fm;
+t = 0:tm/1000:0.002;
+fs = 1/(t(2)-t(1));
+
+% === Message Signal ===
+m = Am*sin(2*pi*fm*t);
+
+% === Carrier Signal ===
+c = Ac*sin(2*pi*fc*t);
+
+% === Frequency Deviations ===
+freqdev_NBFM = 1000;    % Narrowband (? < 1)
+freqdev_WBFM = 10000;  % Wideband (? >> 1)
+
+% === Modulated Signals ===
+y_nb = Ac*cos(2*pi*fc*t + (freqdev_NBFM/fm)*sin(2*pi*fm*t)); % NBFM
+y_wb = Ac*cos(2*pi*fc*t + (freqdev_WBFM/fm)*sin(2*pi*fm*t)); % WBFM
+
+% === Demodulation ===
+ym_nb = fmdemod(y_nb, fc, fs, freqdev_NBFM);
+ym_wb = fmdemod(y_wb, fc, fs, freqdev_WBFM);
+
+% === Time Domain Plots ===
+figure;
+subplot(3,2,1);
+plot(t,m);
+title('Message Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+subplot(3,2,2);
+plot(t,c);
+title('Carrier Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+subplot(3,2,3);
+plot(t,y_nb);
+title('Narrowband FM (NBFM) Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+subplot(3,2,4);
+plot(t,y_wb);
+title('Wideband FM (WBFM) Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+subplot(3,2,5);
+plot(t,ym_nb);
+title('Demodulated NBFM Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+subplot(3,2,6);
+plot(t,ym_wb);
+title('Demodulated WBFM Signal');
+xlabel('Time (s)');
+ylabel('Amplitude (V)');
+
+% === Bandwidth Calculation ===
+BW_NBFM = 2 * fm; 
+BW_WBFM = 2 * (freqdev_WBFM + fm);
+fprintf('NBFM Bandwidth = %.0f Hz\n', BW_NBFM);
+fprintf('WBFM Bandwidth = %.0f Hz\n', BW_WBFM);
+
+p = (Ac^2)/2 ;
+fprintf('Power = %.2f Hz\n', p);
+
+P_nb = mean(y_nb.^2);   % NBFM power
+P_wb = mean(y_wb.^2);   % WBFM power
+
+fprintf('NBFM Simulated Power      = %.4f W\n', P_nb);
+fprintf('WBFM Simulated Power      = %.4f W\n', P_wb);
+
