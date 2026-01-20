@@ -70,7 +70,7 @@ fprintf('NBFM Bandwidth = %.0f Hz\n', BW_NBFM);
 fprintf('WBFM Bandwidth = %.0f Hz\n', BW_WBFM);
 
 p = (Ac^2)/2 ;
-fprintf('Power = %.2f Hz\n', p);
+fprintf('Power = %.2f W\n', p);
 
 P_nb = mean(y_nb.^2);   % NBFM power
 P_wb = mean(y_wb.^2);   % WBFM power
